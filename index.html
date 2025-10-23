@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BGEN 55 - Week 5: Evolutionary Force I: Mutation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --warning: #fca311;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --gradient: linear-gradient(135deg, #4361ee, #3a0ca3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: var(--gradient);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .logo i {
+            font-size: 1.8rem;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        nav ul li a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .hero {
+            background: var(--gradient);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: cover;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+        
+        .module-overview {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .module-overview h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+        }
+        
+        .module-overview h2 i {
+            color: var(--accent);
+        }
+        
+        .time-estimate {
+            background: var(--primary);
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+        }
+        
+        .learning-objectives {
+            background: rgba(67, 97, 238, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .learning-objectives h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .learning-objectives ul {
+            margin-left: 0;
+            padding-left: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .learning-objectives li {
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 0;
+            list-style-position: outside;
+        }
+        
+        .learning-objectives li::before {
+            content: "✓";
+            position: absolute;
+            left: -1.5rem;
+            color: var(--success);
+            font-weight: bold;
+        }
+        
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .module-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .module-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .module-card h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.4rem;
+        }
+        
+        .module-card h3 .icon {
+            background: var(--gradient);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .card-time {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .card-content {
+            flex-grow: 1;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-section {
+            margin-bottom: 1.2rem;
+        }
+        
+        .card-section h4 {
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .card-section ul {
+            margin-left: 0;
+            padding-left: 1.5rem;
+        }
+        
+        .card-section li {
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 0;
+            list-style-position: outside;
+            line-height: 1.5;
+        }
+        
+        .card-section li::before {
+            content: "•";
+            position: absolute;
+            left: -1rem;
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .material-link {
+            color: var(--primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 0.3rem;
+            line-height: 1.4;
+        }
+        
+        .material-link:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+        
+        .material-link i {
+            margin-top: 0.2rem;
+            flex-shrink: 0;
+        }
+        
+        .interactive-element {
+            background: rgba(247, 37, 133, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .interactive-element h4 {
+            color: var(--accent);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .assessment {
+            background: rgba(76, 201, 240, 0.1);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            border-left: 4px solid var(--success);
+        }
+        
+        .assessment p {
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+        
+        .quiz-container, .simulation-container {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin: 3rem 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .quiz-container h2, .simulation-container h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+        }
+        
+        .question {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .question:last-child {
+            border-bottom: none;
+        }
+        
+        .question p {
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--dark);
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .option:hover {
+            background: rgba(67, 97, 238, 0.1);
+        }
+        
+        .option input[type="radio"] {
+            accent-color: var(--primary);
+        }
+        
+        button {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        .secondary-btn {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+            box-shadow: none;
+        }
+        
+        .secondary-btn:hover {
+            background: rgba(67, 97, 238, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .correct {
+            background: rgba(76, 201, 240, 0.2);
+            border-left: 4px solid var(--success);
+        }
+        
+        .incorrect {
+            background: rgba(247, 37, 133, 0.1);
+            border-left: 4px solid var(--accent);
+        }
+        
+        .simulation-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .control-group label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        input[type="number"], input[type="range"] {
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="number"]:focus, input[type="range"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .simulation-visualization {
+            width: 100%;
+            height: 300px;
+            background: rgba(67, 97, 238, 0.05);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(67, 97, 238, 0.1);
+        }
+        
+        .allele-a, .allele-b {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            transition: all 1s ease;
+        }
+        
+        .allele-a {
+            background: var(--primary);
+            box-shadow: 0 2px 5px rgba(67, 97, 238, 0.5);
+        }
+        
+        .allele-b {
+            background: var(--accent);
+            box-shadow: 0 2px 5px rgba(247, 37, 133, 0.5);
+        }
+        
+        .simulation-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .result-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+        
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 1.5rem;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-section a {
+            color: #ddd;
+            text-decoration: none;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer-section a:hover {
+            color: var(--success);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid #444;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .developer {
+            text-align: center;
+            margin-top: 1rem;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .learning-objectives ul {
+                grid-template-columns: 1fr;
+            }
+            
+            .simulation-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Animation for elements */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .module-card, .quiz-container, .simulation-container {
+            animation: fadeIn 0.6s ease forwards;
+        }
+        
+        .module-card:nth-child(2) { animation-delay: 0.1s; }
+        .module-card:nth-child(3) { animation-delay: 0.2s; }
+        .module-card:nth-child(4) { animation-delay: 0.3s; }
+        .module-card:nth-child(5) { animation-delay: 0.4s; }
+        .module-card:nth-child(6) { animation-delay: 0.5s; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-dna"></i>
+                <span>BGEN 55 - Advanced Genetics II</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#overview"><i class="fas fa-home"></i> Overview</a></li>
+                    <li><a href="#parts"><i class="fas fa-th-large"></i> Modules</a></li>
+                    <li><a href="#quiz"><i class="fas fa-question-circle"></i> Quiz</a></li>
+                    <li><a href="#simulation"><i class="fas fa-flask"></i> Simulation</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container hero-content">
+            <h1>Week 5 - Evolutionary Force I: Mutation</h1>
+            <p>Discover how genetic mutation creates variation and interacts with selection to shape populations over time</p>
+            <div class="hero-badge">
+                <i class="far fa-clock"></i> Estimated Time: 4-5 hours
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <section id="overview" class="module-overview">
+            <h2><i class="fas fa-info-circle"></i> Module Overview</h2>
+            <div class="time-estimate">
+                <i class="far fa-clock"></i> Total Estimated Time: 4-5 hours (Reading, Activities, and Assignment)
+            </div>
+            <p>This week, we transition from systems that rearrange existing variation to forces that create and remove variation. You will explore how mutation, the ultimate source of genetic diversity, acts as an evolutionary force on its own and in opposition to natural selection.</p>
+            
+            <div class="learning-objectives">
+                <h3><i class="fas fa-bullseye"></i> Learning Objectives</h3>
+                <p>After completing this module, you will be able to:</p>
+                <ul>
+                    <li>Model the effect of recurrent mutation on allele frequency</li>
+                    <li>Explain the concept of mutation-selection balance</li>
+                    <li>Calculate equilibrium frequencies under mutation-selection balance</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="parts" class="module-grid">
+            <!-- Part 1 -->
+            <div class="module-card">
+                <h3><span class="icon"><i class="fas fa-book-open"></i></span> Part 1: Introduction & Recap</h3>
+                <div class="card-time"><i class="far fa-clock"></i> 30 min</div>
+                <div class="card-content">
+                    <div class="card-section">
+                        <h4><i class="fas fa-graduation-cap"></i> Learning Objective</h4>
+                        <p>Connect Week 4 to Week 5. Understand mutation as the source of all new variation.</p>
+                    </div>
+                    <div class="card-section">
+                        <h4><i class="fas fa-file-alt"></i> Materials</h4>
+                        <ul>
+                            <li><a href="week5-materials/part1-introduction/lecture-notes-rearranging-to-creating-variation.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Lecture Notes: "From Rearranging to Creating Variation"</a></li>
+                            <li><a href="week5-materials/part1-introduction/discussion-board-instructions.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Discussion Board Instructions</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="interactive-element">
+                    <h4><i class="fas fa-comments"></i> Discussion Board Activity</h4>
+                    <p><strong>"Mutation in the News":</strong> Find a news article about a genetic mutation. Post the link and in 1-2 sentences, classify the mutation as neutral, deleterious, or advantageous, and explain why.</p>
+                </div>
+                <div class="assessment">
+                    <p><i class="fas fa-tasks"></i> <strong>Assessment:</strong> Post your finding and comment on two peers' posts.</p>
+                </div>
+            </div>
+
+            <!-- Part 2 -->
+            <div class="module-card">
+                <h3><span class="icon"><i class="fas fa-dna"></i></span> Part 2: Mutation as Source of Variation</h3>
+                <div class="card-time"><i class="far fa-clock"></i> 45 min</div>
+                <div class="card-content">
+                    <div class="card-section">
+                        <h4><i class="fas fa-graduation-cap"></i> Learning Objective</h4>
+                        <p>Define mutation rate (µ) and explain why mutation is a weak but constant force.</p>
+                    </div>
+                    <div class="card-section">
+                        <h4><i class="fas fa-file-alt"></i> Materials</h4>
+                        <ul>
+                            <li><a href="week5-materials/part2-mutation-source/detailed-lecture-properties-of-mutation.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Detailed Lecture: "The Properties of Mutation"</a></li>
+                            <li><a href="week5-materials/part2-mutation-source/infographic-spectrum-of-mutation-effects.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Infographic: "The Spectrum of Mutation Effects"</a></li>
+                            <li><a href="week5-materials/part2-mutation-source/self-check-quiz-instructions.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Self-Check Quiz Instructions</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="interactive-element">
+                    <h4><i class="fas fa-question-circle"></i> Self-Check Quiz</h4>
+                    <p>Test your understanding of mutation properties and rates.</p>
+                    <button onclick="location.href='#quiz'"><i class="fas fa-play-circle"></i> Take Quiz</button>
+                </div>
+            </div>
+
+            <!-- Part 3 -->
+            <div class="module-card">
+                <h3><span class="icon"><i class="fas fa-chart-line"></i></span> Part 3: Model 1 - Recurrent Mutation</h3>
+                <div class="card-time"><i class="far fa-clock"></i> 60 min</div>
+                <div class="card-content">
+                    <div class="card-section">
+                        <h4><i class="fas fa-graduation-cap"></i> Learning Objective</h4>
+                        <p>Model the effect of recurrent mutation on allele frequency.</p>
+                    </div>
+                    <div class="card-section">
+                        <h4><i class="fas fa-file-alt"></i> Materials</h4>
+                        <ul>
+                            <li><a href="week5-materials/part3-recurrent-mutation/interactive-tutorial-modeling-one-way-mutation.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Interactive Tutorial: "Modeling One-Way Mutation"</a></li>
+                            <li><a href="week5-materials/part3-recurrent-mutation/guided-calculation-exercise-worksheet.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Guided Calculation Exercise Worksheet</a></li>
+                            <li><a href="week5-materials/part3-recurrent-mutation/practice-problems-recurrent-mutation.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Practice Problems: Recurrent Mutation</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="interactive-element">
+                    <h4><i class="fas fa-pencil-alt"></i> Practice Exercise</h4>
+                    <p>Starting with p=1.0 and µ=1e-5, calculate p after 1000 and 10,000 generations.</p>
+                </div>
+                <div class="assessment">
+                    <p><i class="fas fa-tasks"></i> <strong>Assessment:</strong> Submit completed worksheet.</p>
+                </div>
+            </div>
+
+            <!-- Part 4 -->
+            <div class="module-card">
+                <h3><span class="icon"><i class="fas fa-balance-scale"></i></span> Part 4: Model 2 - Mutation-Selection Balance</h3>
+                <div class="card-time"><i class="far fa-clock"></i> 90 min</div>
+                <div class="card-content">
+                    <div class="card-section">
+                        <h4><i class="fas fa-graduation-cap"></i> Learning Objectives</h4>
+                        <p>Explain mutation-selection balance and calculate equilibrium frequencies.</p>
+                    </div>
+                    <div class="card-section">
+                        <h4><i class="fas fa-file-alt"></i> Materials</h4>
+                        <ul>
+                            <li><a href="week5-materials/part4-mutation-selection-balance/lecture-evolutionary-tug-of-war.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Lecture: "The Evolutionary Tug-of-War"</a></li>
+                            <li><a href="week5-materials/part4-mutation-selection-balance/animated-simulation-instructions.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Animated Simulation Instructions</a></li>
+                            <li><a href="week5-materials/part4-mutation-selection-balance/derivation-guide-mutation-selection-balance.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Derivation Guide: "Deriving q̂ = √(µ/s)"</a></li>
+                            <li><a href="week5-materials/part4-mutation-selection-balance/worked-examples-mutation-selection.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Worked Examples: Mutation-Selection</a></li>
+                            <li><a href="week5-materials/part4-mutation-selection-balance/scenario-based-quiz.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Scenario-Based Quiz</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="interactive-element">
+                    <h4><i class="fas fa-question-circle"></i> Scenario-Based Quiz</h4>
+                    <p>Apply your knowledge to solve problems about mutation-selection balance.</p>
+                </div>
+            </div>
+
+            <!-- Part 5 -->
+            <div class="module-card">
+                <h3><span class="icon"><i class="fas fa-search"></i></span> Part 5: Synthesis & Application</h3>
+                <div class="card-time"><i class="far fa-clock"></i> 45 min</div>
+                <div class="card-content">
+                    <div class="card-section">
+                        <h4><i class="fas fa-graduation-cap"></i> Learning Objective</h4>
+                        <p>Integrate concepts to solve novel problems.</p>
+                    </div>
+                    <div class="card-section">
+                        <h4><i class="fas fa-file-alt"></i> Materials</h4>
+                        <ul>
+                            <li><a href="week5-materials/part5-synthesis-application/summary-week5-at-a-glance.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Summary Document: "Week 5 at a Glance"</a></li>
+                            <li><a href="week5-materials/part5-synthesis-application/case-study-hereditary-hemochromatosis.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Case Study: "Hereditary Hemochromatosis"</a></li>
+                            <li><a href="week5-materials/part5-synthesis-application/discussion-guidelines.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Discussion Guidelines</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="interactive-element">
+                    <h4><i class="fas fa-comments"></i> Case Study Discussion</h4>
+                    <p>Analyze why a deleterious allele might be common in a population.</p>
+                </div>
+                <div class="assessment">
+                    <p><i class="fas fa-tasks"></i> <strong>Assessment:</strong> Post analysis and respond to peers.</p>
+                </div>
+            </div>
+
+            <!-- Part 6 -->
+            <div class="module-card">
+                <h3><span class="icon"><i class="fas fa-clipboard-check"></i></span> Part 6: Summative Assessment</h3>
+                <div class="card-time"><i class="far fa-clock"></i> 30 min</div>
+                <div class="card-content">
+                    <div class="card-section">
+                        <h4><i class="fas fa-graduation-cap"></i> Learning Objectives</h4>
+                        <p>Assess mastery of all module concepts.</p>
+                    </div>
+                    <div class="card-section">
+                        <h4><i class="fas fa-file-alt"></i> Materials</h4>
+                        <ul>
+                            <li><a href="week5-materials/part6-assessment/graded-quiz-instructions.pdf" class="material-link" target="_blank"><i class="fas fa-file-pdf"></i> Graded Quiz Instructions</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="assessment">
+                    <p><i class="fas fa-tasks"></i> <strong>Assessment:</strong> Quiz with multiple-choice, calculation, and short-answer questions.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="quiz" class="quiz-container">
+            <h2><i class="fas fa-question-circle"></i> Self-Check Quiz: Mutation Properties</h2>
+            <p>Test your understanding of key concepts from Parts 1 and 2.</p>
+            
+            <div class="question">
+                <p>1. A mutation rate of 1 × 10⁻⁶ means:</p>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" id="q1a" name="q1" value="a">
+                        <label for="q1a">One mutation occurs per million individuals per generation</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" id="q1b" name="q1" value="b">
+                        <label for="q1b">One mutation occurs per million base pairs per generation</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" id="q1c" name="q1" value="c">
+                        <label for="q1c">One mutation occurs per million gametes per generation</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" id="q1d" name="q1" value="d">
+                        <label for="q1d">One mutation occurs per locus per million gametes per generation</label>
+                    </div>
+                </div>
+                <div class="result" id="result1"></div>
+            </div>
+            
+            <div class="question">
+                <p>2. True or False: Most new mutations are advantageous.</p>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" id="q2a" name="q2" value="a">
+                        <label for="q2a">True</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" id="q2b" name="q2" value="b">
+                        <label for="q2b">False</label>
+                    </div>
+                </div>
+                <div class="result" id="result2"></div>
+            </div>
+            
+            <div class="question">
+                <p>3. Which type of mutation provides the raw material for evolution?</p>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" id="q3a" name="q3" value="a">
+                        <label for="q3a">Only advantageous mutations</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" id="q3b" name="q3" value="b">
+                        <label for="q3b">Only neutral mutations</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" id="q3c" name="q3" value="c">
+                        <label for="q3c">All mutations (neutral, deleterious, and advantageous)</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" id="q3d" name="q3" value="d">
+                        <label for="q3d">Only deleterious mutations</label>
+                    </div>
+                </div>
+                <div class="result" id="result3"></div>
+            </div>
+            
+            <button id="submit-quiz"><i class="fas fa-check-circle"></i> Check Answers</button>
+            <button id="reset-quiz" class="secondary-btn"><i class="fas fa-redo"></i> Reset Quiz</button>
+        </section>
+
+        <section id="simulation" class="simulation-container">
+            <h2><i class="fas fa-flask"></i> Mutation Simulation: Recurrent Mutation Model</h2>
+            <p>This simulation demonstrates how allele frequencies change under recurrent one-way mutation (A → a).</p>
+            
+            <div class="simulation-controls">
+                <div class="control-group">
+                    <label for="initial-p">Initial Frequency of A (p₀):</label>
+                    <input type="number" id="initial-p" min="0" max="1" step="0.01" value="1.0">
+                </div>
+                <div class="control-group">
+                    <label for="mutation-rate">Mutation Rate (µ):</label>
+                    <input type="number" id="mutation-rate" min="0.00001" max="0.1" step="0.00001" value="0.0001">
+                </div>
+                <div class="control-group">
+                    <label for="generations">Number of Generations:</label>
+                    <input type="number" id="generations" min="1" max="10000" value="1000">
+                </div>
+                <div class="control-group">
+                    <button id="run-simulation"><i class="fas fa-play"></i> Run Simulation</button>
+                </div>
+            </div>
+            
+            <div class="simulation-visualization" id="visualization">
+                <!-- Visualization will be generated by JavaScript -->
+            </div>
+            
+            <div class="simulation-results">
+                <div class="result-box">
+                    <p>Final Frequency of A (p):</p>
+                    <div class="result-value" id="final-p">1.00</div>
+                </div>
+                <div class="result-box">
+                    <p>Final Frequency of a (q):</p>
+                    <div class="result-value" id="final-q">0.00</div>
+                </div>
+                <div class="result-box">
+                    <p>Change in p (Δp):</p>
+                    <div class="result-value" id="delta-p">0.00</div>
+                </div>
+                <div class="result-box">
+                    <p>Theoretical p after t generations:</p>
+                    <div class="result-value" id="theoretical-p">1.00</div>
+                </div>
+            </div>
+            
+            <div class="interactive-element">
+                <h4><i class="fas fa-lightbulb"></i> Understanding the Results</h4>
+                <p>The formula for the frequency of A after t generations is: p<sub>t</sub> = p<sub>0</sub>(1 - µ)<sup>t</sup></p>
+                <p>Try different values to see how mutation rate and time affect allele frequencies. Notice how slow the process is even with relatively high mutation rates.</p>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-dna"></i> BGEN 55 - Advanced Genetics II</h3>
+                    <p>Exploring the mechanisms of evolutionary genetics and population dynamics.</p>
+                </div>
+                <div class="footer-section">
+                    <h3><i class="fas fa-link"></i> Quick Links</h3>
+                    <ul>
+                        <li><a href="#overview"><i class="fas fa-chevron-right"></i> Module Overview</a></li>
+                        <li><a href="#parts"><i class="fas fa-chevron-right"></i> Learning Modules</a></li>
+                        <li><a href="#quiz"><i class="fas fa-chevron-right"></i> Self-Check Quiz</a></li>
+                        <li><a href="#simulation"><i class="fas fa-chevron-right"></i> Mutation Simulation</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 BGEN 55 - Advanced Genetics II. All rights reserved.</p>
+            </div>
+            <div class="developer">
+                <p>Developed by CAE Cadorna</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Quiz functionality
+        document.getElementById('submit-quiz').addEventListener('click', function() {
+            checkQuiz();
+        });
+        
+        document.getElementById('reset-quiz').addEventListener('click', function() {
+            resetQuiz();
+        });
+        
+        function checkQuiz() {
+            // Question 1
+            const q1Answer = document.querySelector('input[name="q1"]:checked');
+            const result1 = document.getElementById('result1');
+            
+            if (q1Answer) {
+                if (q1Answer.value === 'd') {
+                    result1.textContent = "Correct! A mutation rate of 1 × 10⁻⁶ means one mutation occurs per locus per million gametes per generation.";
+                    result1.className = "result correct";
+                } else {
+                    result1.textContent = "Incorrect. The correct answer is: One mutation occurs per locus per million gametes per generation.";
+                    result1.className = "result incorrect";
+                }
+                result1.style.display = 'block';
+            }
+            
+            // Question 2
+            const q2Answer = document.querySelector('input[name="q2"]:checked');
+            const result2 = document.getElementById('result2');
+            
+            if (q2Answer) {
+                if (q2Answer.value === 'b') {
+                    result2.textContent = "Correct! Most new mutations are either neutral or deleterious. Advantageous mutations are rare.";
+                    result2.className = "result correct";
+                } else {
+                    result2.textContent = "Incorrect. The statement is false. Most new mutations are either neutral or deleterious, not advantageous.";
+                    result2.className = "result incorrect";
+                }
+                result2.style.display = 'block';
+            }
+            
+            // Question 3
+            const q3Answer = document.querySelector('input[name="q3"]:checked');
+            const result3 = document.getElementById('result3');
+            
+            if (q3Answer) {
+                if (q3Answer.value === 'c') {
+                    result3.textContent = "Correct! All types of mutations provide the raw material for evolution, though their effects differ.";
+                    result3.className = "result correct";
+                } else {
+                    result3.textContent = "Incorrect. The correct answer is: All mutations (neutral, deleterious, and advantageous) provide the raw material for evolution.";
+                    result3.className = "result incorrect";
+                }
+                result3.style.display = 'block';
+            }
+        }
+        
+        function resetQuiz() {
+            // Clear all radio buttons
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach(radio => {
+                radio.checked = false;
+            });
+            
+            // Hide all results
+            const results = document.querySelectorAll('.result');
+            results.forEach(result => {
+                result.style.display = 'none';
+            });
+        }
+        
+        // Simulation functionality
+        document.getElementById('run-simulation').addEventListener('click', function() {
+            runSimulation();
+        });
+        
+        function runSimulation() {
+            // Get input values
+            const initialP = parseFloat(document.getElementById('initial-p').value);
+            const mutationRate = parseFloat(document.getElementById('mutation-rate').value);
+            const generations = parseInt(document.getElementById('generations').value);
+            
+            // Calculate final frequency
+            const finalP = initialP * Math.pow(1 - mutationRate, generations);
+            const finalQ = 1 - finalP;
+            const deltaP = finalP - initialP;
+            
+            // Theoretical calculation
+            const theoreticalP = initialP * Math.pow(1 - mutationRate, generations);
+            
+            // Update results
+            document.getElementById('final-p').textContent = finalP.toFixed(4);
+            document.getElementById('final-q').textContent = finalQ.toFixed(4);
+            document.getElementById('delta-p').textContent = deltaP.toFixed(4);
+            document.getElementById('theoretical-p').textContent = theoreticalP.toFixed(4);
+            
+            // Update visualization
+            updateVisualization(finalP, finalQ);
+        }
+        
+        function updateVisualization(p, q) {
+            const visualization = document.getElementById('visualization');
+            visualization.innerHTML = '';
+            
+            // Create a simple bar chart representation
+            const pBar = document.createElement('div');
+            pBar.style.position = 'absolute';
+            pBar.style.bottom = '0';
+            pBar.style.left = '0';
+            pBar.style.width = (p * 100) + '%';
+            pBar.style.height = '50%';
+            pBar.style.backgroundColor = 'var(--primary)';
+            pBar.style.transition = 'width 1s';
+            pBar.style.borderRadius = '8px 0 0 8px';
+            
+            const qBar = document.createElement('div');
+            qBar.style.position = 'absolute';
+            qBar.style.bottom = '0';
+            qBar.style.left = (p * 100) + '%';
+            qBar.style.width = (q * 100) + '%';
+            qBar.style.height = '50%';
+            qBar.style.backgroundColor = 'var(--accent)';
+            qBar.style.transition = 'width 1s, left 1s';
+            qBar.style.borderRadius = '0 8px 8px 0';
+            
+            visualization.appendChild(pBar);
+            visualization.appendChild(qBar);
+            
+            // Add labels
+            const pLabel = document.createElement('div');
+            pLabel.textContent = 'A: ' + (p * 100).toFixed(1) + '%';
+            pLabel.style.position = 'absolute';
+            pLabel.style.top = '10px';
+            pLabel.style.left = '10px';
+            pLabel.style.color = 'var(--primary)';
+            pLabel.style.fontWeight = 'bold';
+            pLabel.style.fontSize = '1.1rem';
+            
+            const qLabel = document.createElement('div');
+            qLabel.textContent = 'a: ' + (q * 100).toFixed(1) + '%';
+            qLabel.style.position = 'absolute';
+            qLabel.style.top = '10px';
+            qLabel.style.right = '10px';
+            qLabel.style.color = 'var(--accent)';
+            qLabel.style.fontWeight = 'bold';
+            qLabel.style.fontSize = '1.1rem';
+            
+            visualization.appendChild(pLabel);
+            visualization.appendChild(qLabel);
+        }
+        
+        // Initialize the visualization
+        updateVisualization(1, 0);
+    </script>
+</body>
+</html>
